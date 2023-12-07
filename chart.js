@@ -244,6 +244,89 @@ function drawDonutChart(canvas, data)
     ctx.fill();
 }
 
+function drawLine(ctx, startX, startY, endX, endY, color, lw)
+{
+    ctx.lineWidth = lw;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = color;
+    ctx.stroke()
+}
+
+function drawRadarChart(canvas, data){
+    let ctx = canvas.getContext("2d");
+    let center_x = (canvas.clientWidth / 2), center_y = (canvas.clientHeight / 2) + ((canvas.clientHeight / 8));
+    let side_length = (canvas.clientWidth / 2) / 2, x1, y1, x2, y2, x3, y3;
+    let x11, y11, x22, y22, x33, y33;
+    let keys = Object.keys(data.values);
+    let rotationAngle = Math.PI / 6;
+
+    // Ruota il canvas
+    ctx.translate(center_x, center_y);
+    ctx.rotate(rotationAngle);
+    ctx.translate(-center_x, -center_y);
+
+    //retrieving the coordinates based from the center point
+    x1 = center_x + side_length * Math.cos(0);
+    y1 = center_y + side_length * Math.sin(0);
+    x2 = center_x + side_length * Math.cos((2 * Math.PI / 3));
+    y2 = center_y + side_length * Math.sin((2 * Math.PI / 3));
+    x3 = center_x + side_length * Math.cos((4 * Math.PI / 3));
+    y3 = center_y + side_length * Math.sin((4 * Math.PI / 3));
+    
+    //writing labels
+    ctx.font = "13px Arial";
+    ctx.fillText(keys[0], x1, y1)
+    ctx.fillText(keys[1], x2, y2 + 10)
+    ctx.fillText(keys[2], x3, y3)
+
+    //filling with color the bigger triangle
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x3, y3);
+    ctx.closePath();
+    ctx.fillStyle = data.colors[0];
+    ctx.fill();
+
+    //drawing border for bigger triangle
+    ctx.beginPath();
+    drawLine(ctx, x1, y1, x2, y2, "#ffffff", 3);
+    drawLine(ctx, x2, y2, x3, y3, "#ffffff", 3);
+    drawLine(ctx, x3, y3, x1, y1, "#ffffff", 3);
+
+    //retrieving the coordinated of the smaller triangle mapping tha value passed in data object
+    x11 = mapValue(data.values[keys[0]], 0, 100, center_x, x1);
+    y11 = mapValue(data.values[keys[0]], 0, 100, center_y, y1);
+    
+    x22 = mapValue(data.values[keys[1]], 0, 100, center_x, x2);
+    y22 = mapValue(data.values[keys[1]], 0, 100, center_y, y2);
+    
+    x33 = mapValue(data.values[keys[2]], 0, 100, center_x, x3);
+    y33 = mapValue(data.values[keys[2]], 0, 100, center_y, y3);
+    
+    //filling with color the smaller triangle
+    ctx.beginPath();
+    ctx.moveTo(x11, y11);
+    ctx.lineTo(x22, y22);
+    ctx.lineTo(x33, y33);
+    ctx.closePath();
+    ctx.fillStyle = data.colors[1];
+    ctx.fill();
+    ctx.beginPath();
+
+    //drawing outer border for smaller triangle
+    drawLine(ctx, x11, y11, x22, y22, "#ffffff", 2);
+    drawLine(ctx, x22, y22, x33, y33, "#ffffff", 2);
+    drawLine(ctx, x33, y33, x11, y11, "#ffffff", 2);
+    
+    //drawing line from each vertex to the center point
+    ctx.beginPath();
+    drawLine(ctx, center_x, center_y, x1, y1, "#ffffff", 1);
+    drawLine(ctx, center_x, center_y, x2, y2, "#ffffff", 1);
+    drawLine(ctx, center_x, center_y, x3, y3, "#ffffff", 1);
+}
+
 window.addEventListener("resize", ()=>{
     //loop trough all the registered charts and if resize events is triggered the chart size id changed accordingly
     for (let i = 0; i < charts.length; i++)
@@ -269,6 +352,8 @@ function drawChart(canvas, data, toPush)
         drawPieChart(canvas, data);
     else if (data.type == "donut")
         drawDonutChart(canvas, data);
+    else if (data.type == "radar")
+        drawRadarChart(canvas, data);
 }
 
 //--------------------------------
@@ -290,18 +375,17 @@ function drawChart(canvas, data, toPush)
 
 
 // let canvas = document.querySelector(".chart")
-
 // let data = {
-//     type: "vertical",
+//     type: "radar",
 //     values: {
-//         val1: 200,
-//         val3: 80,
+//         val1: 40,
+//         val3: 10,
 //         val4: 50,
 //         val5: 100,
 //         val6: 300,
 //         val7: 250,
 //     },
-//     colors: ["#9D44B5", "#B5446E", "#525252", "#BADEFC", "#0AFFED"],
+//     colors: ["#00afb9", "#f07167", "#2a9d8f"],
 //     maxValue: 400
 // }
 
